@@ -1,0 +1,42 @@
+name: evpn
+
+mgmt:
+  network: evpn-mgmt
+  ipv4-subnet: 172.30.100.0/24
+
+topology:
+  defaults:
+    kind: arista_ceos
+    image: ceos:4.36.2F
+    image-pull-policy: Never
+
+  nodes:
+    spine01:
+      mgmt-ipv4: 172.30.100.11
+      startup-config: configs/spine01.cfg
+    spine02:
+      mgmt-ipv4: 172.30.100.12
+      startup-config: configs/spine02.cfg
+    leaf01:
+      mgmt-ipv4: 172.30.100.21
+      startup-config: configs/leaf01.cfg
+    leaf02:
+      mgmt-ipv4: 172.30.100.22
+      startup-config: configs/leaf02.cfg
+    leaf03:
+      mgmt-ipv4: 172.30.100.23
+      startup-config: configs/leaf03.cfg
+    leaf04:
+      mgmt-ipv4: 172.30.100.24
+      startup-config: configs/leaf04.cfg
+
+  # ethN maps to EOS EthernetN; eth0 is reserved for management.
+  links:
+    - endpoints: ["spine01:eth1", "leaf01:eth1"]
+    - endpoints: ["spine02:eth1", "leaf01:eth2"]
+    - endpoints: ["spine01:eth2", "leaf02:eth1"]
+    - endpoints: ["spine02:eth2", "leaf02:eth2"]
+    - endpoints: ["spine01:eth3", "leaf03:eth1"]
+    - endpoints: ["spine02:eth3", "leaf03:eth2"]
+    - endpoints: ["spine01:eth4", "leaf04:eth1"]
+    - endpoints: ["spine02:eth4", "leaf04:eth2"]

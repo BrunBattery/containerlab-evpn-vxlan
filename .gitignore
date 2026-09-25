@@ -1,0 +1,55 @@
+# Personal working notes and local validation tools
+.local-notes/
+
+# Containerlab state, generated inventories, and saved device configurations
+clab-*/
+.clab*
+*.clab.yml.bak
+ansible-inventory.yml
+topology-data.json
+
+# Vendor images and VM/container archives must stay outside this repository
+images/
+!docs/images/
+!docs/images/topology.svg
+downloads/
+*.tar
+*.tar.*
+*.tgz
+*.txz
+*.xz
+*.qcow2
+*.vmdk
+*.vdi
+*.iso
+*.ova
+*.ovf
+*.bin
+*.swi
+
+# Local credentials and environment overrides
+.env
+.env.*
+secrets/
+credentials/
+*.key
+*.pem
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+
+# Editor, OS, and temporary artifacts
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+*.tmp
+*.log
+*.pcap
+*.pcapng
+__pycache__/
+.venv/
