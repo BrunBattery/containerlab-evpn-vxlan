@@ -137,34 +137,45 @@ reboots and lab teardown retain the image.
 
 Before the first deployment, compare `ip route` and existing Docker network
 subnets with [the address plan](addressing.md). If management addressing conflicts
-with VMware/VPN/Docker networks, change the subnet and all six management
+with VMware/VPN/Docker networks, change the subnet and all ten management
 addresses together in the topology and documentation.
 
 ```bash
 cd ~/labs/containerlab-evpn-vxlan
+make clients
 make deploy
 make inspect
 # Allow EOS to boot and BGP to converge, then run:
 make verify
 ```
 
+`make clients` builds `evpn-client:alpine3.23.6` from Alpine with iproute2 and
+iputils. Build once per Docker host - registry and package access are required.
+Both images must exist locally because automatic pulls are disabled.
+
+Containerlab loads the switch configs and runs `lab/clients/init.sh` after
+connecting the links. It sets each client's eth1 address, MAC, and 1500-byte MTU.
+No manual switch or client configuration is required. See
+[Linux nodes](https://containerlab.dev/manual/kinds/linux/) and
+[startup commands](https://containerlab.dev/manual/nodes/#exec).
+
+Post-deploy actions wait for the EOS CLI to become available. `make inspect`
+shows container state and management addresses - use `make verify` to check
+BGP and forwarding.
+
 The `Makefile` provides these shortcuts:
 
 | Shortcut | Underlying operation |
 | --- | --- |
+| `make clients` | Builds the Alpine-based Linux test image with iproute2 and iputils |
 | `make deploy` | `scripts/deploy.sh`: checks tools/Docker, then `sudo containerlab deploy --topo lab/evpn.clab.yml` |
 | `make inspect` | `sudo containerlab inspect --topo lab/evpn.clab.yml` |
-| `make verify` | `bash scripts/verify.sh`: this project's acceptance checks |
+| `make verify` | `bash scripts/verify-overlay.sh`: underlay, EVPN, and client acceptance checks |
+| `make verify-underlay` | `bash scripts/verify.sh`: Loopback0 peers, reachability, and ECMP |
 | `make destroy` | `scripts/destroy.sh`: `sudo containerlab destroy --topo lab/evpn.clab.yml` |
 
-Access a switch from Ubuntu:
-
-```bash
-sudo docker exec -it clab-evpn-leaf01 Cli
-```
-
-Use `enable`, then `show ip bgp summary` in EOS. Expect two peers per leaf,
-four per spine. See [verification](verification.md) for checks and troubleshooting.
+See [switch and client access](../README.md#switch-and-client-access) for CLI
+and shell commands, and [verification](verification.md) for manual checks.
 
 ## Daily shutdown and restart
 
@@ -197,7 +208,7 @@ make inspect
 make verify
 ```
 
-Tools, the repo, and the image persist. Docker starts at boot if enabled in step 2,
+Tools, the repo, and both images persist. Docker starts at boot if enabled in step 2,
 but the lab must be redeployed.
 
 **If Ubuntu rebooted with the lab deployed:** check `make inspect` and
@@ -216,13 +227,27 @@ and its separate cleanup option.
 | --- | --- | --- |
 | `lab/configs/*.cfg` | Version-controlled source baseline | Edit files and commit reviewed changes |
 | EOS running configuration | Current switch state in memory | Configure through the EOS CLI |
-| `lab/clab-evpn/<node>/flash/startup-config` | Saved startup config - Git-ignored | `write memory` in EOS |
+| `lab/clab-evpn/<node>/flash/startup-config` | Generated startup config - Git-ignored | Deployment and `write memory` in EOS |
 
+Containerlab creates `lab/clab-evpn/` during deployment, and cEOS post-deploy
+actions save configuration even without a manual `write memory`.
 Saved startup configs take precedence on later deployments. See
 [Containerlab startup-config behavior](https://containerlab.dev/manual/nodes/#startup-config).
 `write memory` does not update source files, and Git does not save running EOS
 changes. Copy wanted CLI changes into source configs and review the diff.
 Omit generated credentials and management settings.
+
+To load updated source configs while preserving the generated state:
+
+```bash
+make destroy
+backup_dir="$HOME/lab-backups/evpn-$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$backup_dir"
+sudo mv lab/clab-evpn "$backup_dir/"
+make deploy
+# After EOS boots and BGP converges:
+make verify
+```
 
 To intentionally discard saved runtime state and rebuild from source:
 
@@ -246,6 +271,7 @@ Pulling configs does not apply them to running switches.
 | cEOS boot fails | Check release compatibility, including [cgroups notes](https://containerlab.dev/manual/kinds/ceos/#cgroups-v1). |
 | BGP/pings/ECMP fail | Follow [verification](verification.md) |
 | Source config edits appear ignored | Check saved startup-config precedence above. |
+| Underlay passes but EVPN summary has no neighbors | Compare running BGP config to `lab/configs/*.cfg` - old generated configs may have been reused. |
 
 Keep images, generated state, credentials, and raw support bundles out of Git.
 Review staged changes for secrets, including edits to tracked files.

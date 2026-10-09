@@ -15,6 +15,20 @@ describe the fabric - the VM's NIC gets its address from the VMware network.
 | leaf03 | 65103 | 10.255.0.13/32 | 172.30.100.23/24 |
 | leaf04 | 65104 | 10.255.0.14/32 | 172.30.100.24/24 |
 
+## VTEPs and clients
+
+| Leaf | Loopback1 / VTEP | Client | Client eth1 | Client eth0 management | Client MAC |
+| --- | --- | --- | --- | --- | --- |
+| leaf01 | 10.255.1.11/32 | client01 | 10.10.10.11/24 | 172.30.100.31/24 | 0200.0000.0001 |
+| leaf02 | 10.255.1.12/32 | client02 | 10.10.10.12/24 | 172.30.100.32/24 | 0200.0000.0002 |
+| leaf03 | 10.255.1.13/32 | client03 | 10.10.10.13/24 | 172.30.100.33/24 | 0200.0000.0003 |
+| leaf04 | 10.255.1.14/32 | client04 | 10.10.10.14/24 | 172.30.100.34/24 | 0200.0000.0004 |
+
+Each client eth1 connects to its leaf's Ethernet3 as an untagged VLAN 10 port.
+All leaves use VNI 10010, RT `65000:10010`, and unique RD `<Loopback0>:10`.
+Clients share one subnet with no service gateway. Fabric MTU is 9000, access MTU 1500.
+EVPN peers use the Loopback0 addresses above, not the VTEP addresses.
+
 Management belongs to Docker network `evpn-mgmt`, subnet `172.30.100.0/24`.
 Containerlab assigns the management gateway. Source EOS configs contain no
 management IPs or default routes.
@@ -35,7 +49,7 @@ The spine gets the even address - the leaf gets the odd address.
 | 10.0.4.0/31 | spine01 Ethernet4 | 10.0.4.0/31 | leaf04 Ethernet1 | 10.0.4.1/31 |
 | 10.0.4.2/31 | spine02 Ethernet4 | 10.0.4.2/31 | leaf04 Ethernet2 | 10.0.4.3/31 |
 
-Each BGP neighbor is the other endpoint in this table. The remote ASN is the
+Each IPv4 BGP neighbor is the other endpoint in this table. The remote ASN is the
 peer node's ASN in the node table.
 
 ## Reserved space: not configured
@@ -44,8 +58,8 @@ peer node's ASN in the node table.
 | --- | --- | --- |
 | Additional underlay links | Remaining 10.0.0.0/16 | Continue per-leaf /31 pairs |
 | Router IDs | Remaining 10.255.0.0/24 | Unique Loopback0 /32s |
-| VTEP loopbacks | 10.255.1.0/24 | leaf01–04: 10.255.1.11–14/32 on Loopback1 |
-| Tenant subnets | 10.10.0.0/16 | Later: 10.10.10.0/24 and 10.10.20.0/24 for tenant 1 |
+| Additional VTEPs | Remaining 10.255.1.0/24 | Unique Loopback1 /32s |
+| Additional service subnets | Remaining 10.10.0.0/16 | 10.10.10.0/24 in use - 10.10.20.0/24 reserved |
 | Additional tenant subnets | 10.20.0.0/16 | Tenant 2 - assign with its VRF/VNI plan |
 
 Reservations do not overlap with each other or management. Configure individual

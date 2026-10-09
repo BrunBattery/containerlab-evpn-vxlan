@@ -29,14 +29,74 @@ topology:
     leaf04:
       mgmt-ipv4: 172.30.100.24
       startup-config: configs/leaf04.cfg
+    client01:
+      kind: linux
+      image: evpn-client:alpine3.23.6
+      mgmt-ipv4: 172.30.100.31
+      binds:
+        - clients/init.sh:/usr/local/bin/client-init.sh:ro
+      env:
+        CLIENT_IP: 10.10.10.11/24
+        CLIENT_MAC: "02:00:00:00:00:01"
+      exec:
+        - sh /usr/local/bin/client-init.sh
+    client02:
+      kind: linux
+      image: evpn-client:alpine3.23.6
+      mgmt-ipv4: 172.30.100.32
+      binds:
+        - clients/init.sh:/usr/local/bin/client-init.sh:ro
+      env:
+        CLIENT_IP: 10.10.10.12/24
+        CLIENT_MAC: "02:00:00:00:00:02"
+      exec:
+        - sh /usr/local/bin/client-init.sh
+    client03:
+      kind: linux
+      image: evpn-client:alpine3.23.6
+      mgmt-ipv4: 172.30.100.33
+      binds:
+        - clients/init.sh:/usr/local/bin/client-init.sh:ro
+      env:
+        CLIENT_IP: 10.10.10.13/24
+        CLIENT_MAC: "02:00:00:00:00:03"
+      exec:
+        - sh /usr/local/bin/client-init.sh
+    client04:
+      kind: linux
+      image: evpn-client:alpine3.23.6
+      mgmt-ipv4: 172.30.100.34
+      binds:
+        - clients/init.sh:/usr/local/bin/client-init.sh:ro
+      env:
+        CLIENT_IP: 10.10.10.14/24
+        CLIENT_MAC: "02:00:00:00:00:04"
+      exec:
+        - sh /usr/local/bin/client-init.sh
 
   # ethN maps to EOS EthernetN; eth0 is reserved for management.
   links:
     - endpoints: ["spine01:eth1", "leaf01:eth1"]
+      mtu: 9000
     - endpoints: ["spine02:eth1", "leaf01:eth2"]
+      mtu: 9000
     - endpoints: ["spine01:eth2", "leaf02:eth1"]
+      mtu: 9000
     - endpoints: ["spine02:eth2", "leaf02:eth2"]
+      mtu: 9000
     - endpoints: ["spine01:eth3", "leaf03:eth1"]
+      mtu: 9000
     - endpoints: ["spine02:eth3", "leaf03:eth2"]
+      mtu: 9000
     - endpoints: ["spine01:eth4", "leaf04:eth1"]
+      mtu: 9000
     - endpoints: ["spine02:eth4", "leaf04:eth2"]
+      mtu: 9000
+    - endpoints: ["leaf01:eth3", "client01:eth1"]
+      mtu: 1500
+    - endpoints: ["leaf02:eth3", "client02:eth1"]
+      mtu: 1500
+    - endpoints: ["leaf03:eth3", "client03:eth1"]
+      mtu: 1500
+    - endpoints: ["leaf04:eth3", "client04:eth1"]
+      mtu: 1500
