@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Checks this fixed Phase 1 topology. Update expectations when adding nodes/links.
+# Loopback0 underlay checks. Also sourced by the EVPN/VXLAN verifier.
 set -euo pipefail
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
@@ -94,4 +94,4 @@ for leaf in 1 2 3 4; do
     done
 done
 echo "PASS: two installed next hops for all 12 directed leaf-to-leaf routes."
-echo "Phase 1 checks passed. This does not measure traffic distribution or convergence time."
+echo "Loopback0 underlay checks passed."
