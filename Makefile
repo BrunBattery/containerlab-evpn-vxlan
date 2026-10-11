@@ -1,4 +1,4 @@
-.PHONY: clients deploy destroy inspect verify verify-underlay
+.PHONY: clients deploy destroy inspect connect verify verify-underlay
 
 clients:
 	sudo docker build -t evpn-client:alpine3.23.6 lab/clients
@@ -11,6 +11,9 @@ destroy:
 
 inspect:
 	sudo containerlab inspect --topo lab/evpn.clab.yml
+
+connect:
+	bash scripts/connect.sh "$(NODE)"
 
 verify:
 	bash scripts/verify-overlay.sh

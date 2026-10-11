@@ -170,6 +170,7 @@ The `Makefile` provides these shortcuts:
 | `make clients` | Builds the Alpine-based Linux test image with iproute2 and iputils |
 | `make deploy` | `scripts/deploy.sh`: checks tools/Docker, then `sudo containerlab deploy --topo lab/evpn.clab.yml` |
 | `make inspect` | `sudo containerlab inspect --topo lab/evpn.clab.yml` |
+| `make connect [NODE=<name>]` | `scripts/connect.sh`: node menu or direct switch/client access |
 | `make verify` | `bash scripts/verify-overlay.sh`: underlay, EVPN, and client acceptance checks |
 | `make verify-underlay` | `bash scripts/verify.sh`: Loopback0 peers, reachability, and ECMP |
 | `make destroy` | `scripts/destroy.sh`: `sudo containerlab destroy --topo lab/evpn.clab.yml` |

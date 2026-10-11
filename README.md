@@ -48,21 +48,18 @@ make verify
 
 ### Switch and client access
 
-Run these commands in Ubuntu. For a switch CLI, replace `<node>` with
-`spine01`, `spine02`, or `leaf01`–`leaf04`:
+Run in Ubuntu. Select a switch or client from the menu, or connect by name:
 
 ```bash
-sudo docker exec -it clab-evpn-<node> Cli
+make connect
+make connect NODE=leaf01
+make connect NODE=client01
 ```
+
+The menu accepts a number or node name, or `q` to quit. Switches open the EOS
+CLI and clients open an Alpine Linux shell. The selected container must be running.
 
 Use `enable` for privileged EOS commands.
-
-For an Alpine Linux client shell, replace `<client>` with `client01` through `client04`:
-
-```bash
-sudo docker exec -it clab-evpn-<client> sh
-```
-
 Client `eth0` is management. Use `eth1` for fabric traffic.
 Run `exit` to leave a CLI or shell - the container keeps running.
 
